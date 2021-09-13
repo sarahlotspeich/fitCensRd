@@ -16,8 +16,10 @@
 #' @export
 #'
 linreg_am <- function(params0, Y, X, C, Z = NULL, data, steptol = 1e-6, iterlim = 100) {
-  ols <- nlm(f = loglik_am, p = params0, steptol = steptol, iterlim = iterlim, hessian = TRUE,
-             Y = Y, X = X, C = C, Z = Z, data = data, negate = TRUE)
+  suppressWarnings(
+    ols <- nlm(f = loglik_am, p = params0, steptol = steptol, iterlim = iterlim, hessian = TRUE,
+               Y = Y, X = X, C = C, Z = Z, data = data, negate = TRUE)
+  )
   param_est <- ols$estimate
   if (!is.null(Z)) {
     param_se <- c(sqrt(diag(solve(ols$hessian)))[1:3], NA, sqrt(diag(solve(ols$hessian)))[5:6], NA)
