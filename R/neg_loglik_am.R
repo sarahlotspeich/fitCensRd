@@ -1,5 +1,20 @@
+#' Maximum likelihood estimator (MLE) for right-censored covariates in normal linear regression
+#'
+#' @param params Model parameter values.
+#' @param Y Name of column variable.
+#' @param X Name of censored covariate variable.
+#' @param C Name of observed version of \code{X}.
+#' @param Z (Optional) name(s) of additional fully observed covariates. Default is \code{Z = NULL}
+#' @param data A dataframe containing at least columns \code{Y}, \code{X}, \code{C}, \code{Z}.
+#'
+#' @return A list with the following two elements:
+#' \item{coeff}{A dataframe containing coefficient and standard error estimates at convergence.}
+#' \item{code}{An integer indicating why the optimization process terminated. See \code{?nlm} for details on values.}
+#'
+#' @export
+#'
 # Objective function: log(L) for independent censoring ---------
-loglik_am <- function(params, Y, X, C, Z = NULL, data, negate = FALSE) {
+neg_loglik_am <- function(params, Y, X, C, Z = NULL, data) {
   if (!is.null(Z)) {
     # Analysis model parameters P(Y|X) ----------------
     beta0 <- params[1]
@@ -44,7 +59,7 @@ loglik_am <- function(params, Y, X, C, Z = NULL, data, negate = FALSE) {
     sigX <- params[5]
     # ------------------ Censored model parameters P(X)
     # Log-likelihood contribution of observed X -------
-    obs <- data[, X] <= data[, C]
+    obs <- !is.na(data[, X])
     muY <- beta0 + beta1 * data[obs, X]
     e <- data[obs, Y] - muY
     pYX_obs <- 1 / (2 * pi * sigY * sigX) * exp(- e ^ 2 / (2 * sigY ^ 2) - (data[obs, X] - muX) ^ 2 / (2 * sigX ^ 2))
@@ -59,5 +74,5 @@ loglik_am <- function(params, Y, X, C, Z = NULL, data, negate = FALSE) {
     ll <- ll + sum(log(pYX_cens))
     # ------- Log-likelihood contribution of censored X
   }
-  if (negate) return(-ll) else return(ll)
+  return(-ll)
 }
